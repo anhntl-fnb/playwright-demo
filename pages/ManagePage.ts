@@ -55,6 +55,19 @@ export class ProductPage {
         await this.page.waitForTimeout(1000);
         await this.page.locator('input[ng-model="product.BasePrice"]').fill(price.toString());
         await this.page.locator('a[ng-enter="SaveProduct()"]').click();
+        await this.page.waitForTimeout(1000);
+    }
 
+    async updateProduct(productName: string, updatedProductName: string) {
+        await this.page.locator(`tr:has(.cell-auto.ng-binding:has-text("${productName}"))`).click();
+        await this.page.locator('a.btn-mobile[ng-click="UpdateProduct(dataItem)"]:has-text("Cập nhật")').click();
+        await this.page.locator('input[ng-model="product.Name"]').fill(updatedProductName);
+        await this.page.locator('a[ng-enter="SaveProduct()"]').click();
+    }
+
+    async deleteProduct(productName: string) {
+        await this.page.locator(`tr:has(.cell-auto.ng-binding:has-text("${productName}"))`).click();
+        await this.page.locator('a.btn-danger[ng-click="DeleteProduct(dataItem)"]:has-text("Xóa")').click();
+        await this.page.getByRole('button', { name: 'Đồng ý' }).click();
     }
 }

@@ -7,3 +7,5 @@ test("Login thành công trang Bán hàng", async ({ page }) => {
     await loginPage.loginPos("testfnbz27b", "admin", "4321");
     await expect(page).toHaveTitle(/Thu ngân/);
 })
+
+test('Tạo đơn hàng', async ({ page }) => { })

@@ -40,4 +40,10 @@ test('Thêm/sửa/xóa hàng hóa thành công', async ({ page }) => {
     // Thêm mới Hàng hóa
     const productPage = new ProductPage(page);
     await productPage.addProduct("Hàng hóa 1", "Nhóm hàng 1", 10000);
+
+    // Cập nhật Hàng hóa
+    await productPage.updateProduct("Hàng hóa 1", "Hàng hóa 1 update");
+
+    // Xóa Hàng hóa
+    await productPage.deleteProduct("Hàng hóa 1 update");
 })
