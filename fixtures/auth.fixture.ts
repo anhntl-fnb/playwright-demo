@@ -14,7 +14,7 @@ export const test = base.extend<AuthFixtures>({
 
     // Login 1 lần
     await loginPage.goto();
-    await loginPage.loginMan("testfnbz27b", "admin", "4321");
+    await loginPage.loginMan("testfnbz27b", "anhntl", "123");
 
     // Cho test case sử dụng
     await use(loginPage);
@@ -26,7 +26,7 @@ export const test = base.extend<AuthFixtures>({
 
     // Login 1 lần
     await loginPage.goto();
-    await loginPage.loginPos("testfnbz27b", "admin", "4321");
+    await loginPage.loginPos("testfnbz27b", "anhntl", "123");
 
     // Cho test case sử dụng
     await use(loginPage);

@@ -12,9 +12,10 @@ export class Menu {
 export class CashierPage {
     constructor(public page: Page) { }
 
-    async createOrder(productName: string) {
+    async createInvoice(productName: string) {
         await this.page.locator(`.product-name:has-text("${productName}")`).click();
-
-
+        await this.page.getByRole('button', { name: "Thanh toán (F9)" }).click();
+        await this.page.waitForTimeout(1000);
+        await this.page.getByRole('button', { name: 'Thanh toán' }).nth(1).click();
     }
 }
