@@ -22,7 +22,6 @@ export class TablePage {
     };
 
     async updateTable(tableName: string) {
-        await this.page.locator('td.cell-name span.ng-binding').nth(0).click();
         await this.page.locator('a:has-text("Cập nhật")').click();
         await this.page.locator('input[ng-model="table.Name"]').fill(tableName);
         await this.page.locator('a[ng-click="save()"]').click();
@@ -30,8 +29,7 @@ export class TablePage {
     }
 
     async deleteTable() {
-        await this.page.locator('td.cell-name span.ng-binding').nth(0).click();
-        await this.page.locator('a:has(i.fa-trash-alt)').nth(1).click();
+        await this.page.locator('text=Xóa').nth(1).click();
         await this.page.getByRole('button', { name: 'Đồng ý' }).click();
     }
 }
@@ -59,14 +57,12 @@ export class ProductPage {
     }
 
     async updateProduct(productName: string, updatedProductName: string) {
-        await this.page.locator(`tr:has(.cell-auto.ng-binding:has-text("${productName}"))`).click();
         await this.page.locator('a.btn-mobile[ng-click="UpdateProduct(dataItem)"]:has-text("Cập nhật")').click();
         await this.page.locator('input[ng-model="product.Name"]').fill(updatedProductName);
         await this.page.locator('a[ng-enter="SaveProduct()"]').click();
     }
 
     async deleteProduct(productName: string) {
-        await this.page.locator(`tr:has(.cell-auto.ng-binding:has-text("${productName}"))`).click();
         await this.page.locator('a.btn-danger[ng-click="DeleteProduct(dataItem)"]:has-text("Xóa")').click();
         await this.page.getByRole('button', { name: 'Đồng ý' }).click();
     }
