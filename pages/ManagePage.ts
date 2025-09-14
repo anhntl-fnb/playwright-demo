@@ -29,7 +29,7 @@ export class TablePage {
     }
 
     async deleteTable() {
-        await this.page.locator('text=Xóa').nth(1).click();
+        await this.page.locator('a[ng-click="deleteTable(dataItem)"]', { hasText: 'Xóa' }).click();
         await this.page.getByRole('button', { name: 'Đồng ý' }).click();
     }
 }
@@ -53,7 +53,6 @@ export class ProductPage {
         await this.page.waitForTimeout(1000);
         await this.page.locator('input[ng-model="product.BasePrice"]').fill(price.toString());
         await this.page.locator('a[ng-enter="SaveProduct()"]').click();
-        await this.page.waitForTimeout(1000);
     }
 
     async updateProduct(productName: string, updatedProductName: string) {

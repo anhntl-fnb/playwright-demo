@@ -20,7 +20,7 @@ test('Login MHBH thành công', async ({ page }) => {
 test('Không nhập Tên gian hàng', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.loginMan("", "anhntl", "123");
+    await loginPage.loginMan("", "admin", "123");
     await loginPage.expectErrorMessage("Cửa hàng không tồn tại");
 });
 
@@ -41,6 +41,6 @@ test('Không nhập Mật khẩu', async ({ page }) => {
 test('Nhập sai tên đăng nhập/mật khẩu', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.loginMan("testfnbz27b", "admin", "123");
+    await loginPage.loginMan("testfnbz27b", "admin", "1234");
     await loginPage.expectErrorMessage("Tên đăng nhập hoặc mật khẩu chưa đúng");
 });

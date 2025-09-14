@@ -35,7 +35,7 @@ test('Xóa phòng bàn', async ({ page, authPageMan }) => {
 
 
 // CRUD Hàng hóa
-test.only('Thêm mới hàng hóa thành công', async ({ page, authPageMan }) => {
+test('Thêm mới hàng hóa thành công', async ({ page, authPageMan }) => {
     const menu = new Menu(page);
     const productPage = new ProductPage(page);
 
@@ -45,7 +45,7 @@ test.only('Thêm mới hàng hóa thành công', async ({ page, authPageMan }) =
     await expect(page.getByRole('gridcell', { name: 'Hàng hóa 1' })).toBeVisible();
 });
 
-test.only('Cập nhật hàng hóa thành công', async ({ page, authPageMan }) => {
+test('Cập nhật hàng hóa thành công', async ({ page, authPageMan }) => {
     const menu = new Menu(page);
     const productPage = new ProductPage(page);
 
@@ -55,7 +55,7 @@ test.only('Cập nhật hàng hóa thành công', async ({ page, authPageMan }) 
     await expect(page.getByRole('gridcell', { name: 'Hàng hóa 1 update' })).toBeVisible();
 });
 
-test.only('Xóa hàng hóa thành công', async ({ page, authPageMan }) => {
+test('Xóa hàng hóa thành công', async ({ page, authPageMan }) => {
     const menu = new Menu(page);
     const productPage = new ProductPage(page);
 

@@ -5,10 +5,12 @@ import { LoginPage } from '../pages/LoginPage';
 type AuthFixtures = {
   authPageMan: LoginPage;
   authPagePos: LoginPage;
+  authToken: string;
 };
 
 // Extend test mặc định của Playwright
 export const test = base.extend<AuthFixtures>({
+
   authPageMan: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
 
@@ -32,8 +34,39 @@ export const test = base.extend<AuthFixtures>({
     await use(loginPage);
   },
 
+
+  // Cách 1: Lấy token từ localStorage
+  // authToken: async ({ page }, use) => {
+  //   const loginPage = new LoginPage(page);
+  //   await loginPage.goto();
+  //   const response = await loginPage.loginPos("testfnbz27b", "anhntl", "123");
+
+  //   await page.waitForLoadState('networkidle');
+  //   const raw = await page.evaluate(() => localStorage.getItem("kvSession"));
+  //   const session = raw ? JSON.parse(raw) : null;
+  //   const token = session?.BearerToken;
+  //   await use(token as string);
+
+  // },
+
+  // Cách 2: Gọi API login trực tiếp
+  authToken: async ({ request }, use) => {
+    const response = await request.post("https://fnb.kiotviet.vn/api/users/auth-login?format=json",
+      {
+        data: {
+          UserName: "anhntl",
+          Password: "123",
+        },
+      }
+    );
+
+    const body = await response.json();
+    const token = body?.BearerToken;
+    // Expose cho test case dùng
+    await use(token);
+  },
+
+
 });
-
-
 
 export { expect } from '@playwright/test';
