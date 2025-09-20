@@ -23,10 +23,3 @@ test('Thanh toán đơn hàng thành công', async ({ page, authPagePos, request
 });
 
 
-dataTest('Test tạo data', async ({ category }) => {
-    // In ra xem data có được tạo không
-    console.log('Category created:', category);
-
-    // Kiểm tra cơ bản
-    console.log('Name:', category.Name);
-});
