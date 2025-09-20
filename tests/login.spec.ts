@@ -28,7 +28,11 @@ test('Login MHBH thành công', async ({ page }) => {
 test('Không nhập Tên gian hàng', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.loginMan("", "admin", "123");
+    await loginPage.loginMan(
+        "",
+        process.env.TEST_USERNAME || "anhntl",
+        process.env.TEST_PASSWORD || "123"
+    );
     await loginPage.expectErrorMessage("Cửa hàng không tồn tại");
 });
 
