@@ -1,5 +1,5 @@
 //import { test, expect } from '@playwright/test';
-import { test, expect } from '../fixtures/auth.fixture';
+import { authTest as test, expect } from '../fixtures/auth.fixture';
 import { LoginPage } from '../pages/LoginPage';
 import { Menu, TablePage, ProductPage } from '../pages/ManagePage';
 
@@ -62,6 +62,6 @@ test('Xóa hàng hóa thành công', async ({ page, authPageMan }) => {
     await menu.clickMenu("Hàng hóa");
     await page.getByRole('link', { name: 'Danh mục' }).click();
     await productPage.deleteProduct("Hàng hóa 1 update");
-    await expect(page.getByRole('gridcell', { name: 'Hàng hóa 1 upate' })).not.toBeVisible();
+    await expect(page.getByRole('gridcell', { name: 'Hàng hóa 1 update' })).not.toBeVisible();
 });
 

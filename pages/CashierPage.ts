@@ -15,6 +15,7 @@ export class CashierPage {
     async createInvoice(productName: string) {
         await this.page.locator(`.product-name:has-text("${productName}")`).click();
         const orderCode = (await this.page.locator('a[title^=" Mang về -"] > span').textContent())!.trim();
+        console.log("OrderCode: ", orderCode);
         await this.page.getByRole('button', { name: "Thanh toán (F9)" }).click();
         await this.page.waitForTimeout(1000);
         await this.page.getByRole('button', { name: 'Thanh toán' }).nth(1).click();

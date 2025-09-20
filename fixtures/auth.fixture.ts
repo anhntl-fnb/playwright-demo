@@ -9,12 +9,11 @@ type AuthFixtures = {
 };
 
 // Extend test mặc định của Playwright
-export const test = base.extend<AuthFixtures>({
+export const authTest = base.extend<AuthFixtures>({
 
+  // Login MHQL
   authPageMan: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
-
-    // Login 1 lần
     await loginPage.goto();
     await loginPage.loginMan("testfnbz27b", "anhntl", "123");
 
@@ -22,11 +21,9 @@ export const test = base.extend<AuthFixtures>({
     await use(loginPage);
   },
 
-
+  // Login MHBH
   authPagePos: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
-
-    // Login 1 lần
     await loginPage.goto();
     await loginPage.loginPos("testfnbz27b", "anhntl", "123");
 
@@ -49,7 +46,7 @@ export const test = base.extend<AuthFixtures>({
 
   // },
 
-  // Cách 2: Gọi API login trực tiếp
+  // Lấy Bearer Token = cách gọi API login trực tiếp
   authToken: async ({ request }, use) => {
     const response = await request.post("https://fnb.kiotviet.vn/api/users/auth-login?format=json",
       {
@@ -65,7 +62,6 @@ export const test = base.extend<AuthFixtures>({
     // Expose cho test case dùng
     await use(token);
   },
-
 
 });
 

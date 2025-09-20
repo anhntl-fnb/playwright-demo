@@ -1,6 +1,7 @@
 //import { test, expect } from '@playwright/test';
-import { test, expect } from '../fixtures/auth.fixture';
-import { LoginPage } from '../pages/LoginPage';
+import { authTest as test, expect } from '../fixtures/auth.fixture';
+import { dataTest } from '../fixtures/data.fixture';
+//import { LoginPage } from '../pages/LoginPage';
 import { Menu, CashierPage } from '../pages/CashierPage';
 import { InvoiceHelper } from "../helpers/invoiceHelper";
 
@@ -19,4 +20,13 @@ test('Thanh toán đơn hàng thành công', async ({ page, authPagePos, request
     await page.waitForTimeout(3000);
     await invoiceHelper.verifyInvoice(orderCode, authToken);
 
+});
+
+
+dataTest('Test tạo data', async ({ category }) => {
+    // In ra xem data có được tạo không
+    console.log('Category created:', category);
+
+    // Kiểm tra cơ bản
+    console.log('Name:', category.Name);
 });
