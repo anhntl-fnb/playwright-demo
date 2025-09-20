@@ -15,7 +15,11 @@ export const authTest = base.extend<AuthFixtures>({
   authPageMan: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.loginMan("testfnbz27b", "anhntl", "123");
+    await loginPage.loginMan(
+      process.env.RETAILER || "testfnbz27b",
+      process.env.TEST_USERNAME || "anhntl",
+      process.env.TEST_PASSWORD || "123"
+    );
 
     // Cho test case sử dụng
     await use(loginPage);
@@ -25,7 +29,11 @@ export const authTest = base.extend<AuthFixtures>({
   authPagePos: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.loginPos("testfnbz27b", "anhntl", "123");
+    await loginPage.loginPos(
+      process.env.RETAILER || "testfnbz27b",
+      process.env.TEST_USERNAME || "anhntl",
+      process.env.TEST_PASSWORD || "123"
+    );
 
     // Cho test case sử dụng
     await use(loginPage);
@@ -36,7 +44,11 @@ export const authTest = base.extend<AuthFixtures>({
   // authToken: async ({ page }, use) => {
   //   const loginPage = new LoginPage(page);
   //   await loginPage.goto();
-  //   const response = await loginPage.loginPos("testfnbz27b", "anhntl", "123");
+  //   const response = await loginPage.loginPos(
+  //     process.env.RETAILER || "testfnbz27b",
+  //     process.env.TEST_USERNAME || "anhntl",
+  //     process.env.TEST_PASSWORD || "123"
+  //   );
 
   //   await page.waitForLoadState('networkidle');
   //   const raw = await page.evaluate(() => localStorage.getItem("kvSession"));
@@ -48,11 +60,15 @@ export const authTest = base.extend<AuthFixtures>({
 
   // Lấy Bearer Token = cách gọi API login trực tiếp
   authToken: async ({ request }, use) => {
-    const response = await request.post("https://fnb.kiotviet.vn/api/users/auth-login?format=json",
+    const response = await request.post(
+      `${process.env.BASE_URL || "https://fnb.kiotviet.vn"}/api/users/auth-login?format=json`,
       {
         data: {
-          UserName: "anhntl",
-          Password: "123",
+          UserName: process.env.TEST_USERNAME || "anhntl",
+          Password: process.env.TEST_PASSWORD || "123",
+        },
+        headers: {
+          Retailer: process.env.RETAILER || "testfnbz27b",
         },
       }
     );
