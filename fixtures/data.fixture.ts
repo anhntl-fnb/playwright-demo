@@ -122,7 +122,7 @@ export const dataTest = authTest.extend<TestData>({
 
     // Tạo Nhóm hàng
     category: async ({ request, authToken }, use) => {
-        const categoryName = `category-${Date.now()}`;
+        const categoryName = `Test Category`;
 
         console.log(`🔨 Creating category: ${categoryName}`);
 
@@ -163,8 +163,8 @@ export const dataTest = authTest.extend<TestData>({
 
     // Tạo hàng hóa
     product: async ({ request, authToken, category }, use) => {
-        const productName = `product-${Date.now()}`;
-        const productCode = `P-${Date.now()}`;
+        const productName = `Test Product`;
+        const productCode = `TEST-PRODUCT`;
 
         console.log(`🔨 Creating product: ${productName} for category ID=${category.Id}`);
 
@@ -175,7 +175,7 @@ export const dataTest = authTest.extend<TestData>({
             ProductType: 2,
             CategoryId: category.Id,
             CategoryName: "",
-            isActive: false,
+            isActive: true,
             AllowsSale: true,
             isDeleted: false,
             Code: productCode,
