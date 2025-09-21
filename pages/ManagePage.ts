@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 
-export class Menu {
+export class ManagementMenu {
     constructor(public page: Page) { }
 
     async clickMenu(menuItem: string) {

@@ -1,5 +1,5 @@
 import { dataTest as test, expect } from '../fixtures/data.fixture';
-import { Menu, CashierPage } from '../pages/CashierPage';
+import { CashierMenu, CashierPage } from '../pages/CashierPage';
 import { InvoiceHelper } from "../helpers/invoiceHelper";
 
 // Thanh toán đơn hàng thành công
@@ -19,8 +19,8 @@ test('Thanh toán đơn hàng thành công', async ({
 
     // Mở tab Thực đơn
     console.log(`📱 Navigating to menu...`);
-    const menu = new Menu(page);
-    await menu.clickMenu("Thực đơn");
+    const cashierMenu = new CashierMenu(page);
+    await cashierMenu.clickMenu("Thực đơn");
 
     // Wait for menu page to load
     await page.waitForTimeout(5000);
@@ -53,7 +53,7 @@ test('Thanh toán đơn hàng thành công', async ({
     await page.waitForTimeout(3000);
 
     try {
-        await invoiceHelper.verifyInvoice(orderCode, authToken);
+        await invoiceHelper.verifyInvoice(orderCode);
         console.log(`✅ Invoice verification successful`);
     } catch (error) {
         console.error(`❌ Invoice verification failed:`, error);
