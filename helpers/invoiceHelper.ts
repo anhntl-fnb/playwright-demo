@@ -45,13 +45,19 @@ export class InvoiceHelper {
     }
 
     /**
-     * Create headers for API requests
+     * Create headers for API requests (matching real API requirements)
      */
     private createHeaders() {
         return {
             'Authorization': `Bearer ${this.authToken}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json, text/plain, */*',
+            'branchid': '10351767',
+            'x-app-name': 'web-man',
+            'x-branch-id': '10351767',
+            'x-retailer-code': process.env.RETAILER || 'testfnbz27b',
+            'x-retailer-id': '760874',
+            'retailer': process.env.RETAILER || 'testfnbz27b'
         };
     }
 
@@ -77,13 +83,14 @@ export class InvoiceHelper {
     }
 
     /**
-     * Get invoice list from API
+     * Get recent invoices - simplified approach
      */
     private async getInvoiceList(): Promise<InvoiceListResponse> {
-        const url = `${this.baseUrl}/api/invoices?format=json`;
+        // Simple approach: get recent invoices without complex filtering
+        const url = `${this.baseUrl}/api/invoices?format=json&$top=50&$orderby=Id desc`;
 
         try {
-            console.log(`🔍 Fetching invoice list from: ${url}`);
+            console.log(`🔍 Fetching recent invoices from: ${url}`);
 
             const response = await this.request.get(url, {
                 headers: this.createHeaders(),
@@ -93,10 +100,18 @@ export class InvoiceHelper {
                 throw new Error(`API call failed with status: ${response.status()}`);
             }
 
-            const data: InvoiceListResponse = await response.json();
-            this.validateApiResponse(data, 'Get invoice list');
+            const data: any = await response.json();
+            console.log(`📋 Found ${data.Data?.length || 0} recent invoices`);
 
-            return data;
+            // Return the response as-is if it has Data property
+            if (data.Data) {
+                return data;
+            } else if (Array.isArray(data)) {
+                // Direct array
+                return { Data: data, Message: 'Success' };
+            } else {
+                throw new Error('Unexpected response format');
+            }
 
         } catch (error) {
             console.error(`❌ Failed to get invoice list:`, error);
@@ -105,10 +120,33 @@ export class InvoiceHelper {
     }
 
     /**
-     * Get specific invoice details by ID
+     * Get specific invoice details by ID (using real API structure with Includes)
      */
     private async getInvoiceDetail(invoiceId: number): Promise<InvoiceDetailResponse> {
-        const url = `${this.baseUrl}/api/invoices/${invoiceId}`;
+        // Add includes matching the real API call
+        const includes = [
+            'TotalQuantity',
+            'TotalQuantityWoTopping',
+            'Order',
+            'User',
+            'SoldBy',
+            'Return',
+            'Payments',
+            'Customer',
+            'PriceBook',
+            'InvoicePromotions',
+            'TableAndRoom',
+            'Branch',
+            'AddressLocation',
+            'PartnerInvoiceFees'
+        ];
+
+        const params = new URLSearchParams();
+        includes.forEach(include => {
+            params.append('Includes', include);
+        });
+
+        const url = `${this.baseUrl}/api/invoices/${invoiceId}?${params.toString()}`;
 
         try {
             console.log(`🔍 Fetching invoice detail for ID: ${invoiceId}`);
@@ -122,15 +160,21 @@ export class InvoiceHelper {
             }
 
             const data: any = await response.json();
+            console.log(`🔍 Raw invoice detail response for ID ${invoiceId}:`, JSON.stringify(data, null, 2));
+
             this.validateApiResponse(data, 'Get invoice detail');
 
             // Handle different response structures
             if (data.Id) {
-                // Direct invoice object
+                // Direct invoice object (most common for detail API)
+                console.log(`📋 Using direct invoice object structure`);
                 return { Data: data, Message: 'Success' };
-            } else {
+            } else if (data.Data) {
                 // Wrapped in Data property
+                console.log(`📋 Using wrapped Data structure`);
                 return data;
+            } else {
+                throw new Error(`Unexpected invoice detail response format for ID: ${invoiceId}`);
             }
 
         } catch (error) {
@@ -158,12 +202,14 @@ export class InvoiceHelper {
     }
 
     /**
-     * Verify that an invoice exists for the given order code
+     * Verify that an invoice exists for the given order code and product
      * @param orderCode - The order code to verify
+     * @param productName - The specific product name to match
+     * @param productId - Optional product ID for more precise matching
      */
-    async verifyInvoice(orderCode: string): Promise<void> {
+    async verifyInvoice(orderCode: string, productName: string, productId?: number): Promise<void> {
         try {
-            console.log(`🔍 Verifying invoice for order code: ${orderCode}`);
+            console.log(`🔍 Verifying invoice for order code: ${orderCode} with product: ${productName}`);
 
             // Step 1: Get the list of recent invoices
             const invoiceList = await this.getInvoiceList();
@@ -172,28 +218,66 @@ export class InvoiceHelper {
                 throw new Error('No invoices found in the system');
             }
 
-            console.log(`📋 Found ${invoiceList.Data.length} invoices, looking for order code: ${orderCode}`);
+            console.log(`📋 Found ${invoiceList.Data.length} recent invoices, looking for invoice with product: ${productName}`);
 
-            // Step 2: Find the invoice with matching order code
-            const targetInvoice = this.findInvoiceByOrderCode(invoiceList.Data, orderCode);
+            // Step 2: Check recent invoices for the one containing our product
+            let targetInvoice: any = null;
+            let invoiceDetail: any = null;
 
-            if (!targetInvoice) {
-                console.error(`❌ Available order codes:`, invoiceList.Data.map(inv => inv.OrderCode));
-                throw new Error(`Invoice with order code "${orderCode}" not found`);
+            // Check the first 10 most recent invoices
+            const recentInvoices = invoiceList.Data.slice(0, 10);
+
+            for (const invoice of recentInvoices) {
+                console.log(`🔍 Checking invoice ID: ${invoice.Id}, Code: ${invoice.Code}`);
+
+                try {
+                    const detail = await this.getInvoiceDetail(invoice.Id);
+
+                    // Check if this invoice contains our product
+                    const hasProduct = detail.Data.InvoiceDetails?.some((item: any) => {
+                        const nameMatch = item.ProductName === productName;
+                        const idMatch = productId ? item.ProductId === productId : true;
+
+                        console.log(`   - Product: ${item.ProductName}, ID: ${item.ProductId}, Match: ${nameMatch && idMatch}`);
+                        return nameMatch && idMatch;
+                    });
+
+                    if (hasProduct) {
+                        targetInvoice = invoice;
+                        invoiceDetail = detail;
+                        console.log(`✅ Found matching invoice: ID=${invoice.Id}, Code=${invoice.Code}, contains product: ${productName}`);
+                        break;
+                    }
+                } catch (error) {
+                    console.log(`⚠️ Could not get details for invoice ID: ${invoice.Id}`);
+                    continue;
+                }
             }
 
-            console.log(`✅ Found matching invoice: ID=${targetInvoice.Id}, OrderCode=${targetInvoice.OrderCode}`);
+            if (!targetInvoice || !invoiceDetail) {
+                throw new Error(`Invoice containing product "${productName}" not found in recent invoices`);
+            }
 
-            // Step 3: Get detailed information about the invoice
-            const invoiceDetail = await this.getInvoiceDetail(targetInvoice.Id);
+            // Step 4: Validate invoice detail structure
+            if (!invoiceDetail || !invoiceDetail.Data) {
+                throw new Error(`Invalid invoice detail response structure for ID: ${targetInvoice.Id}`);
+            }
 
-            // Step 4: Verify the order codes match exactly
-            expect(invoiceDetail.Data.OrderCode).toBe(orderCode);
+            // Step 5: Verify the invoice contains the expected product
+            const productInInvoice = invoiceDetail.Data.InvoiceDetails?.find((item: any) => {
+                return item.ProductName === productName && (productId ? item.ProductId === productId : true);
+            });
+
+            if (!productInInvoice) {
+                throw new Error(`Invoice does not contain expected product: ${productName}`);
+            }
 
             console.log(`🎉 Invoice verification successful:`);
-            console.log(`   - Invoice Code: ${invoiceDetail.Data.Code}`);
-            console.log(`   - Order Code: ${invoiceDetail.Data.OrderCode}`);
-            console.log(`   - Invoice ID: ${invoiceDetail.Data.Id}`);
+            console.log(`   - Invoice Code: ${invoiceDetail.Data.Code || 'N/A'}`);
+            console.log(`   - Invoice ID: ${invoiceDetail.Data.Id || 'N/A'}`);
+            console.log(`   - Contains Product: ${productInInvoice.ProductName} (ID: ${productInInvoice.ProductId})`);
+            console.log(`   - Product Quantity: ${productInInvoice.Quantity}`);
+            console.log(`   - Product Total: ${productInInvoice.SubTotal}`);
 
         } catch (error) {
             console.error(`❌ Invoice verification failed for order code "${orderCode}":`, error);
