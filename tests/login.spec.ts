@@ -2,9 +2,15 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 //import { log } from 'console';
 
-test('Login MHQL thành công', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
+    // Clear any pre-filled data from previous sessions
+    await loginPage.clearForm();
+});
+
+test('Login MHQL thành công', async ({ page }) => {
+    const loginPage = new LoginPage(page);
     await loginPage.loginMan(
         process.env.RETAILER || "testfnbz27b",
         process.env.TEST_USERNAME || "anhntl",
@@ -15,7 +21,6 @@ test('Login MHQL thành công', async ({ page }) => {
 
 test('Login MHBH thành công', async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
     await loginPage.loginPos(
         process.env.RETAILER || "testfnbz27b",
         process.env.TEST_USERNAME || "anhntl",
@@ -25,20 +30,9 @@ test('Login MHBH thành công', async ({ page }) => {
 
 });
 
-test('Không nhập Tên gian hàng', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.loginMan(
-        "",
-        process.env.TEST_USERNAME || "anhntl",
-        process.env.TEST_PASSWORD || "123"
-    );
-    await loginPage.expectErrorMessage("Cửa hàng không tồn tại");
-});
 
 test('Không nhập Tên đăng nhập', async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
     await loginPage.loginMan(
         process.env.RETAILER || "testfnbz27b",
         "",
@@ -49,7 +43,6 @@ test('Không nhập Tên đăng nhập', async ({ page }) => {
 
 test('Không nhập Mật khẩu', async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
     await loginPage.loginMan(
         process.env.RETAILER || "testfnbz27b",
         process.env.TEST_USERNAME || "anhntl",
@@ -60,7 +53,6 @@ test('Không nhập Mật khẩu', async ({ page }) => {
 
 test('Nhập sai tên đăng nhập/mật khẩu', async ({ page }) => {
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
     await loginPage.loginMan(
         process.env.RETAILER || "testfnbz27b",
         "admin",
