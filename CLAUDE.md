@@ -67,10 +67,13 @@ HEADLESS=false
 ### Playwright Configuration
 - **Base URL**: `https://fnb.kiotviet.vn`
 - **Parallel Execution**: Enabled for performance
+- **Workers**: 2 workers locally, 1 on CI
+- **Retries**: 2 retries on CI, 0 locally
 - **Timeout**: 60s tests, 10s assertions
 - **Browser**: Chromium (Chrome simulation)
 - **Custom Headers**: Includes `Retailer` header for API requests
 - **Branch Context**: Configured for branch ID `10351767`
+- **Reporter**: HTML reporter for test results
 
 ## Test Completion Status
 
@@ -156,6 +159,14 @@ npx playwright codegen https://fnb.kiotviet.vn
 - **Products**: `/api/products/addmany` (POST), `/api/products/{id}` (DELETE)
 - **Invoices**: Invoice creation and verification endpoints
 
+## Recent Updates
+
+### Latest Changes (September 2025)
+- **Login Function Updates**: Enhanced login functionality (commit: fb19b7b)
+- **Invoice Verification**: Updated invoiceHelper.ts with improved invoice verification logic
+- **Test Stability**: Improved cashier.spec.ts test reliability
+- **Data Management**: Enhanced data fixture handling and cleanup mechanisms
+
 ## Project Notes
 
 - **Language**: Test descriptions in Vietnamese for business stakeholder clarity
@@ -164,5 +175,6 @@ npx playwright codegen https://fnb.kiotviet.vn
 - **Retailer Context**: Uses `testfnbz27b` as default test retailer
 - **Error Handling**: Comprehensive error handling with detailed logging
 - **Performance**: Tests optimized with parallel data creation and UI synchronization
+- **Dependencies**: Uses Playwright 1.55.0 with TypeScript support
 
 This is a production-ready test suite with advanced patterns for reliable E2E testing of a complex POS system.

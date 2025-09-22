@@ -126,28 +126,6 @@ export class LoginPage {
         }
     }
 
-    async clearForm(): Promise<void> {
-        // Clear browser storage that might auto-fill the form
-        await this.page.evaluate(() => {
-            localStorage.removeItem('retailer');
-            localStorage.removeItem('kvSession');
-            localStorage.removeItem('retailerId');
-            // Clear all localStorage keys starting with 'offline_ss_'
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('offline_ss_')) {
-                    localStorage.removeItem(key);
-                }
-            });
-        });
-
-        // Clear form fields
-        await this.elements.retailerInput.clear();
-        await this.elements.usernameInput.clear();
-        await this.elements.passwordInput.clear();
-
-        // Wait a moment for any auto-fill to be cleared
-        await this.page.waitForTimeout(500);
-    }
 
     async isFormVisible(): Promise<boolean> {
         return await this.elements.form.isVisible();

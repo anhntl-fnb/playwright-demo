@@ -5,8 +5,6 @@ import { LoginPage } from '../pages/LoginPage';
 test.beforeEach(async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    // Clear any pre-filled data from previous sessions
-    await loginPage.clearForm();
 });
 
 test('Login MHQL thành công', async ({ page }) => {
