@@ -18,8 +18,8 @@ export class CashierPage {
         // Wait for products to load with simple timeout
         await this.page.waitForTimeout(5000);
 
-        // Simple approach - just look for the product name text
-        await this.page.locator(`text=${productName}`).click();
+        // Click on the product card (more specific selector)
+        await this.page.locator('.product-name').filter({ hasText: productName }).first().click();
         console.log(`✅ Found and clicked product: ${productName}`);
 
         // Wait for order code to appear

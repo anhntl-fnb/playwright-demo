@@ -3,14 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "npx playwright test",
+    "test:cucumber": "cucumber-js",
+    "test:cucumber:login": "cucumber-js features/login.feature",
+    "test:cucumber:manage": "cucumber-js features/manage.feature",
+    "test:cucumber:cashier": "cucumber-js features/cashier.feature",
+    "cleanup": "ts-node scripts/cleanup-test-data.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@cucumber/cucumber": "^12.2.0",
     "@playwright/test": "^1.55.0",
     "@types/dotenv": "^6.1.1",
-    "@types/node": "^24.3.0"
+    "@types/node": "^24.3.0",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "dotenv": "^17.2.2"

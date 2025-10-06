@@ -17,12 +17,20 @@ interface InvoiceListResponse {
     };
 }
 
+interface InvoiceDetailItem {
+    ProductId: number;
+    ProductName: string;
+    Quantity: number;
+    Price: number;
+}
+
 interface InvoiceDetail {
     Id: number;
     Code: string;
     OrderCode: string;
     CreatedDate: string;
     Total: number;
+    InvoiceDetails?: InvoiceDetailItem[];
 }
 
 interface InvoiceDetailResponse {
