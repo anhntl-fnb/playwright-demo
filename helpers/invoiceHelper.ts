@@ -214,8 +214,9 @@ export class InvoiceHelper {
      * @param orderCode - The order code to verify
      * @param productName - The specific product name to match
      * @param productId - Optional product ID for more precise matching
+     * @returns Invoice ID and Code for later deletion
      */
-    async verifyInvoice(orderCode: string, productName: string, productId?: number): Promise<void> {
+    async verifyInvoice(orderCode: string, productName: string, productId?: number): Promise<{ invoiceId: number; invoiceCode: string }> {
         try {
             console.log(`🔍 Verifying invoice for order code: ${orderCode} with product: ${productName}`);
 
@@ -287,6 +288,11 @@ export class InvoiceHelper {
             console.log(`   - Product Quantity: ${productInInvoice.Quantity}`);
             console.log(`   - Product Total: ${productInInvoice.SubTotal}`);
 
+            return {
+                invoiceId: invoiceDetail.Data.Id,
+                invoiceCode: invoiceDetail.Data.Code
+            };
+
         } catch (error) {
             console.error(`❌ Invoice verification failed for order code "${orderCode}":`, error);
             throw error; // Re-throw to fail the test
@@ -308,5 +314,32 @@ export class InvoiceHelper {
 
         const invoiceDetail = await this.getInvoiceDetail(targetInvoice.Id);
         return invoiceDetail.Data;
+    }
+
+    /**
+     * Delete invoice by ID and Code
+     * @param invoiceId - The invoice ID to delete
+     * @param invoiceCode - The invoice code for verification
+     */
+    async deleteInvoice(invoiceId: number, invoiceCode: string): Promise<void> {
+        try {
+            console.log(`🗑️ Deleting invoice ID: ${invoiceId}, Code: ${invoiceCode}`);
+
+            const url = `${this.baseUrl}/api/invoices/${invoiceId}?CompareCode=${invoiceCode}&IsVoidPayment=true`;
+
+            const response = await this.request.delete(url, {
+                headers: this.createHeaders(),
+            });
+
+            if (!response.ok()) {
+                const responseText = await response.text();
+                throw new Error(`API call failed with status: ${response.status()}, Response: ${responseText}`);
+            }
+
+            console.log(`✅ Invoice deleted successfully: ID=${invoiceId}, Code=${invoiceCode}`);
+        } catch (error) {
+            console.error(`❌ Failed to delete invoice ID ${invoiceId}:`, error);
+            throw new Error(`Failed to delete invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
     }
 }

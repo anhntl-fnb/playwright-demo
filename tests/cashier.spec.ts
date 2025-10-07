@@ -9,12 +9,14 @@ test('Thanh toán đơn hàng thành công', async ({
     request,
     authToken
 }) => {
-    // Step 1: Navigate to cashier page (don't wait for full load)
-    console.log(`📱 Navigating to cashier page...`);
-    await page.waitForTimeout(3000);
+    // Variables to track created data for cleanup
+    let categoryId: number | null = null;
+    let productId: number | null = null;
+    let invoiceInfo: { invoiceId: number; invoiceCode: string } | null = null;
 
-    // Step 2: Create test data immediately (don't wait for page load)
-    console.log(`🔨 Creating test data...`);
+    try {
+        // Step 1: Create test data first
+        console.log(`🔨 Creating test data...`);
 
     // Create category with unique name to avoid conflicts
     const categoryName = `Test-Cat-${Date.now()}`;
@@ -40,10 +42,12 @@ test('Thanh toán đơn hàng thành công', async ({
     });
 
     const categoryData = await categoryRes.json();
-    console.log(`✅ Category created: ${categoryData.Data.Name} (ID: ${categoryData.Data.Id})`);
+    categoryId = categoryData.Data.Id;
+    console.log(`✅ Category created: ${categoryData.Data.Name} (ID: ${categoryId})`);
 
-    // Create product
+    // Create product with unique code
     const productName = `Test Product`;
+    const productCode = `TEST-PROD-${Date.now()}`;
     const productData = {
         Id: 0,
         ProductGroup: 1,
@@ -53,7 +57,7 @@ test('Thanh toán đơn hàng thành công', async ({
         isActive: true,
         AllowsSale: true,
         isDeleted: false,
-        Code: `TEST-PRODUCT`,
+        Code: productCode,
         BasePrice: 10000,
         Cost: 1000,
         Name: productName,
@@ -80,16 +84,36 @@ test('Thanh toán đơn hàng thành công', async ({
     });
 
     const productResponse = await productRes.json();
-    const product = productResponse.Data[0];
-    console.log(`✅ Product created: ${product.Name} (ID: ${product.Id})`);
 
-    // Step 3: Now navigate to menu (data will sync while we navigate)
+    // Check if product creation was successful
+    if (!productResponse.Data || !productResponse.Data[0]) {
+        console.error('❌ Product creation failed. Response:', JSON.stringify(productResponse, null, 2));
+        throw new Error('Failed to create product');
+    }
+
+    const product = productResponse.Data[0];
+    productId = product.Id;
+    console.log(`✅ Product created: ${product.Name} (ID: ${productId})`);
+
+    // Step 3: Navigate to cashier page and wait for it to load
+    console.log(`📱 Navigating to cashier page and waiting for load...`);
+    console.log(`📱 Current URL after login: ${page.url()}`);
+
+    await page.goto(`${process.env.BASE_URL || 'https://fnb.kiotviet.vn'}/${process.env.RETAILER || 'testfnbz27b'}/pos/#/cashier`, {
+        waitUntil: 'domcontentloaded'
+    });
+
+    // Wait for the cashier page to be fully loaded
+    await page.waitForLoadState('networkidle');
+    console.log(`✅ Cashier page loaded at: ${page.url()}`);
+
+    // Step 4: Now click on menu
     console.log(`📱 Now clicking on menu...`);
     const cashierMenu = new CashierMenu(page);
     await cashierMenu.clickMenu("Thực đơn");
     await page.waitForTimeout(5000);
 
-    // Step 4: Wait for product to be visible in UI
+    // Step 5: Wait for product to be visible in UI
     console.log(`🔍 Waiting for product to be visible in UI: ${product.Name}`);
 
     // Try to find the product with retries
@@ -118,7 +142,7 @@ test('Thanh toán đơn hàng thành công', async ({
         throw new Error(`Product "${product.Name}" not visible in UI after ${maxRetries * 5} seconds`);
     }
 
-    // Step 5: Use the product
+    // Step 6: Use the product
     const cashierPage = new CashierPage(page);
     let orderCode: string;
 
@@ -144,48 +168,65 @@ test('Thanh toán đơn hàng thành công', async ({
     const invoiceHelper = new InvoiceHelper(request, authToken);
     await page.waitForTimeout(3000);
 
-    try {
-        await invoiceHelper.verifyInvoice(orderCode, product.Name, product.Id);
-        console.log(`✅ Invoice verification successful`);
-    } catch (error) {
-        console.error(`❌ Invoice verification failed:`, error);
-        throw error;
-    }
+    invoiceInfo = await invoiceHelper.verifyInvoice(orderCode, product.Name, product.Id);
+    console.log(`✅ Invoice verification successful`);
 
     console.log(`🎉 Test completed successfully with order: ${orderCode}`);
 
-    // Cleanup: Delete created data
-    console.log(`🧹 Cleaning up test data...`);
-    try {
-        // Delete product
-        await request.delete(`${process.env.BASE_URL || 'https://fnb.kiotviet.vn'}/api/products/${product.Id}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Retailer': process.env.RETAILER || 'testfnbz27b',
-                'branchid': '10351767',
-                'x-branch-id': '10351767',
-                'x-retailer-code': process.env.RETAILER || 'testfnbz27b',
-                'x-retailer-id': '760874',
-                'x-app-name': 'web-man',
-            }
-        });
-        console.log(`✅ Product deleted: ID=${product.Id}`);
+    } finally {
+        // Cleanup: Delete created data (always runs, even if test fails)
+        // Order: Invoice -> Product -> Category (due to foreign key dependencies)
+        console.log(`🧹 Cleaning up test data...`);
+        const invoiceHelper = new InvoiceHelper(request, authToken);
 
-        // Delete category
-        await request.delete(`${process.env.BASE_URL || 'https://fnb.kiotviet.vn'}/api/categories?Id=${categoryData.Data.Id}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Retailer': process.env.RETAILER || 'testfnbz27b',
-                'branchid': '10351767',
-                'x-branch-id': '10351767',
-                'x-retailer-code': process.env.RETAILER || 'testfnbz27b',
-                'x-retailer-id': '760874',
-                'x-app-name': 'web-man',
+        // 1. Delete invoice first
+        try {
+            if (invoiceInfo) {
+                await invoiceHelper.deleteInvoice(invoiceInfo.invoiceId, invoiceInfo.invoiceCode);
             }
-        });
-        console.log(`✅ Category deleted: ID=${categoryData.Data.Id}`);
-    } catch (error) {
-        console.warn(`⚠️ Cleanup warning:`, error);
+        } catch (error) {
+            console.warn(`⚠️ Failed to delete invoice:`, error);
+        }
+
+        // 2. Delete product (must be before category)
+        try {
+            if (productId) {
+                await request.delete(`${process.env.BASE_URL || 'https://fnb.kiotviet.vn'}/api/products/${productId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Retailer': process.env.RETAILER || 'testfnbz27b',
+                        'branchid': '10351767',
+                        'x-branch-id': '10351767',
+                        'x-retailer-code': process.env.RETAILER || 'testfnbz27b',
+                        'x-retailer-id': '760874',
+                        'x-app-name': 'web-man',
+                    }
+                });
+                console.log(`✅ Product deleted: ID=${productId}`);
+            }
+        } catch (error) {
+            console.warn(`⚠️ Failed to delete product:`, error);
+        }
+
+        // 3. Delete category last
+        try {
+            if (categoryId) {
+                await request.delete(`${process.env.BASE_URL || 'https://fnb.kiotviet.vn'}/api/categories?Id=${categoryId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Retailer': process.env.RETAILER || 'testfnbz27b',
+                        'branchid': '10351767',
+                        'x-branch-id': '10351767',
+                        'x-retailer-code': process.env.RETAILER || 'testfnbz27b',
+                        'x-retailer-id': '760874',
+                        'x-app-name': 'web-man',
+                    }
+                });
+                console.log(`✅ Category deleted: ID=${categoryId}`);
+            }
+        } catch (error) {
+            console.warn(`⚠️ Failed to delete category:`, error);
+        }
     }
 });
 
