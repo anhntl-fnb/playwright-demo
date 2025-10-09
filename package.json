@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
-    "test:cucumber": "cucumber-js",
-    "test:cucumber:login": "cucumber-js features/login.feature",
-    "test:cucumber:manage": "cucumber-js features/manage.feature",
-    "test:cucumber:cashier": "cucumber-js features/cashier.feature",
+    "test": "cucumber-js",
+    "test:login": "cucumber-js features/login.feature",
+    "test:manage": "cucumber-js features/manage.feature",
+    "test:cashier": "cucumber-js features/cashier.feature",
     "cleanup": "ts-node scripts/cleanup-test-data.ts"
   },
   "keywords": [],

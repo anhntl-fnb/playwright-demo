@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import { LoginPage } from '../pages/LoginPage';
 
-Given('trước người dùng đang ở trang đăng nhập', async function (this: CustomWorld) {
+Given('người dùng đang ở trang đăng nhập', async function (this: CustomWorld) {
   if (!this.page) throw new Error('Page is not initialized');
   const loginPage = new LoginPage(this.page);
   await loginPage.goto();
