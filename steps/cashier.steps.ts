@@ -17,7 +17,7 @@ interface CashierWorld extends CustomWorld {
   orderCode?: string;
 }
 
-Given('trước người dùng đã đăng nhập MHBH thành công', async function (this: CashierWorld) {
+Given('người dùng đã đăng nhập MHBH thành công', async function (this: CashierWorld) {
   if (!this.page) throw new Error('Page is not initialized');
   const loginPage = new LoginPage(this.page);
   await loginPage.goto();

@@ -4,7 +4,7 @@ import { CustomWorld } from '../support/world';
 import { LoginPage } from '../pages/LoginPage';
 import { ManagementMenu, TablePage, ProductPage } from '../pages/ManagePage';
 
-Given('trước người dùng đã đăng nhập MHQL thành công', async function (this: CustomWorld) {
+Given('người dùng đã đăng nhập MHQL thành công', async function (this: CustomWorld) {
   if (!this.page) throw new Error('Page is not initialized');
   const loginPage = new LoginPage(this.page);
   await loginPage.goto();
